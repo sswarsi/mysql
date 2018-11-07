@@ -1,0 +1,39 @@
+SELECT t1.attribute_id, t1.attribute_code, t1.backend_type
+FROM eav_entity_type AS t0
+INNER JOIN eav_attribute AS t1
+  ON (t0.entity_type_id = t1.entity_type_id)
+WHERE (t0.entity_model = 'catalog/product')
+
+attribute_id | attribute_code      | backend_type
+------------ | ------------------- | ------------
+230          | brand               | varchar     
+228          | cardboard_height_cm | varchar     
+227          | cardboard_width_cm  | varchar     
+108          | category_ids        | static      
+92           | color               | int         
+79           | cost                | decimal 
+
+SELECT t1.entity_id, t1.attribute_id, t1.entity_type_id, t1.store_id, t1.value, t1.value_id
+FROM catalog_product_entity AS t0
+LEFT OUTER JOIN catalog_product_entity_varchar AS t1
+  ON (((t1.attribute_id = 71) AND (t1.store_id = 0)) AND (t1.entity_id = t0.entity_id))
+WHERE (t0.sku IS NOT NULL)
+ORDER BY t0.sku
+
+SELECT t0.sku, t1.qty, t2.value, t3.value AS value1
+FROM catalog_product_entity AS t0
+INNER JOIN cataloginventory_stock_item AS t1
+  ON (t0.entity_id = t1.product_id)
+INNER JOIN (
+  SELECT t4.entity_id, t4.value
+  FROM catalog_product_entity_varchar AS t4
+  WHERE ((t4.attribute_id = 71) AND (t4.store_id = 0))
+  ) AS t2
+  ON (t0.entity_id = t2.entity_id)
+INNER JOIN (
+  SELECT t5.entity_id, t5.value
+  FROM catalog_product_entity_varchar AS t5
+  WHERE ((t5.attribute_id = 207) AND (t5.store_id = 0))
+  ) AS t3
+  ON (t0.entity_id = t3.entity_id)
+WHERE ((t0.sku IS NOT NULL) AND (t1.qty <= 100))
